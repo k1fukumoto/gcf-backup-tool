@@ -1,0 +1,64 @@
+<backup-config>
+
+	<!--  Service accounts for vCenter, vCloud Director and Avamar -->
+	<account>
+		<!-- vBlock2 vCenter -->
+		<vcenter user="sbgcf\svc_report" hostname="VBCdhv-011"/>
+
+		<!-- VIP of IAAS vCloud Director cells -->
+		<vcloud-director user="vcdadminl" hostname="172.17.1.11"/>
+
+		<!--
+		  hostname: Avamar utility node hostname
+		  user:     login user for Avamar utility node
+		  domain:   Avamar domain. Not related to Windows AD domain. 
+		            It is usually setup as /{vCenter}/VirtualMachines.
+		  datacenter: vSphere Datacenter
+		-->
+		<avamar hostname="VBOdag-001" 
+				user="root" 
+		        domain="/VBCdhv-011/VirtualMachines" 
+		        datacenter="Tokyo"/>	
+	</account>
+
+    <!-- Organization vDC name to backup start time mapping -->
+	<orders>
+		<order orgvdc="test01 OvDC" start-time="21"/>
+		<order orgvdc="test02 OvDC" start-time="22"/>
+	</orders>
+
+    <!-- Datastore name pattern to backup generation mapping -->
+	<datastore-maps>
+		<datastore-map pattern="*_N1" generation="1"/>
+		<datastore-map pattern="*_N7" generation="7"/>
+		<datastore-map pattern="*_D1" generation="1"/>
+		<datastore-map pattern="*_D7" generation="7"/>
+	</datastore-maps>
+	
+	<!-- Avamar backup group definitions -->
+	<groups>
+		<group name="IAAS01" generation="1" start-time="21"/>
+		<group name="IAAS02" generation="1" start-time="22"/>
+		<group name="IAAS03" generation="1" start-time="23"/>
+		<group name="IAAS04" generation="1" start-time="0"/>
+		<group name="IAAS05" generation="1" start-time="1"/>
+		<group name="IAAS06" generation="1" start-time="2"/>
+		<group name="IAAS07" generation="1" start-time="3"/>
+		<group name="IAAS08" generation="1" start-time="4"/>
+		<group name="IAAS09" generation="1" start-time="5"/>
+		<group name="IAAS10" generation="1" start-time="6"/>
+		<group name="IAAS11" generation="1" start-time="7"/>
+		<group name="IAAS12" generation="7" start-time="21"/>
+		<group name="IAAS13" generation="7" start-time="22"/>
+		<group name="IAAS14" generation="7" start-time="23"/>
+		<group name="IAAS15" generation="7" start-time="0"/>
+		<group name="IAAS16" generation="7" start-time="1"/>
+		<group name="IAAS17" generation="7" start-time="2"/>
+		<group name="IAAS18" generation="7" start-time="3"/>
+		<group name="IAAS19" generation="7" start-time="4"/>
+		<group name="IAAS20" generation="7" start-time="5"/>
+		<group name="IAAS21" generation="7" start-time="6"/>
+		<group name="IAAS22" generation="7" start-time="7"/>
+	</groups>
+
+</backup-config>
