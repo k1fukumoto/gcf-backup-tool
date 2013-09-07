@@ -18,6 +18,7 @@ function load-csv ($csv) {
 	$ret = @{}
 	$lines = Import-Csv $csv
 	foreach($l in $lines)  {
+		if ($l -eq $null -or $l.vm -eq $null) {continue}
 		$a = $ret.Get_Item($l.vm)
 		if($a -eq $null) {
 			$ret.Add($l.vm,$l.gname)
@@ -28,8 +29,8 @@ function load-csv ($csv) {
 	return $ret
 }
 
-$LASTEVENT
 function AvamarRunCmd($cmd) {
+	INFO ("Execute Avamar Command '$ {0}'" -f $cmd)
 	.\plink.exe "$($acct.user)@$($acct.hostname)" -ssh -pw $p $cmd > $TMP_MCCLI
 	[xml]$ret = Get-Content $TMP_MCCLI
 	return [int]$ret.CLIOutput.Results.ReturnCode
