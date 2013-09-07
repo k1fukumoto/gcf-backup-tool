@@ -34,18 +34,25 @@ $cred = New-Object System.Management.Automation.PSCredential($acct.user, (Get-Co
 $p = $cred.GetNetworkCredential().Password
 
 # Subset of groups for testing
-$groups = @('IAAS01','IAAS02','IAAS12','IAAS13')
 
 $vmlist = @()
-foreach ($g in $groups) {
-	$group_show_clients = "mccli group show-client-members --domain=$($acct.domain) --name=$($g) --xml"
-	INFO ("Fetching goup $g")
+$groups = $cfg.'backup-config'.groups.group | %{ $_.Name}
+# $groups = @('IAAS01','IAAS07')
+foreach ($gname in $groups) {
+	$group_show_clients = "mccli group show-client-members --domain=$($acct.domain) --name=$($gname) --xml"
+	INFO ("Fetching Avamar goup '$gname'")
 
 	.\plink.exe "$($acct.user)@$($acct.hostname)" -ssh -pw $p $group_show_clients > $TMP_MCCLI
 	[xml]$gjob = Get-Content $TMP_MCCLI
 	
-	$rows = $gjob.CLIOutput.Data.Row | %{
-		$vmlist += (CreateRow (StripDomain $_.Client) (StripDomain $_.Group))
+	if(0 -eq  [int]$gjob.CLIOutput.Results.ReturnCode) {
+		$rows = $gjob.CLIOutput.Data.Row
+		foreach ($r in $rows) {
+			if($r.Client -eq $null) {continue}
+			$vmlist += (CreateRow (StripDomain $r.Client) (StripDomain $r.Group))
+		}
+	} else {
+		ERROR("Failed to query VM list for group '{0}'" -f $gname)
 	}
 }
 
