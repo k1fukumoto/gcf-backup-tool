@@ -44,8 +44,13 @@ function FindGroup($gen,$order) {
 }
 
 # Load backup configuration
-[xml]$cfg = Get-Content $BACKUP_CFG
-
+try {
+	[xml]$cfg = Get-Content $BACKUP_CFG
+} catch {
+	ERROR("Execution Aborted >> '{0}'" -f $_)
+	$_
+	exit
+}
 
 # Connect to vCenter
 $acct = $cfg.'backup-config'.account
@@ -60,7 +65,10 @@ $vcd = Connect-CIServer -Server $acct.'vcloud-director'.hostname -Credential $cr
 $vmlist = @()
 $cfg.'backup-config'.orders.order | %{
 	$order = $_
-	Get-OrgVdc $_.orgvdc | Get-CIVM | % {
+	INFO ("Fetching VDC '{0}'" -f $_.orgvdc)
+	$vdc = Get-OrgVdc $_.orgvdc
+	if($vdc -eq $null) {throw "VDC {0} not found" -f $_.orgvdc}
+	$vdc | Get-CIVM | % {
 		$vsvm = Get-VM -Name ("*{0}*" -f $_.Id.split(':')[3])
 		$datastores = $vsvm | Get-Datastore 
 		# At least 2 datastores are returned for each VM. One for VMX file, and the other for disks.
@@ -69,10 +77,10 @@ $cfg.'backup-config'.orders.order | %{
 		foreach($ds in $datastores) {
 			$gname = FindGroup (FindGeneration $ds) $order
 			if($gname) {
-				INFO("'{0}' -> {1}" -f $vsvm.Name, $gname) 
+				INFO("VM '{0}' is mapped to '{1}'" -f $vsvm.Name, $gname) 
 				$vmlist += (CreateRow $vsvm $gname)
 			} else {
-				INFO("'{0}' not backup target" -f $vsvm.Name)
+				INFO("VM '{0}' is not backup target" -f $vsvm.Name)
 			}
 			break
 		}
