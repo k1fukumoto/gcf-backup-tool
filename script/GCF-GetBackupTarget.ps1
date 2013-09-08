@@ -75,12 +75,18 @@ $cfg.'backup-config'.orders.order | %{
 		# VCD doesn't allow to create VM which spans multiple storage profiles/datastores.
 		# Just pick the first datastore.
 		foreach($ds in $datastores) {
-			$gname = FindGroup (FindGeneration $ds) $order
+			$gen = FindGeneration $ds
+			if ($gen -eq $null) {
+				INFO("VM '{0}' is not backup target" -f $vsvm.Name)
+				break
+			} 
+			
+			$gname = FindGroup $gen $order
 			if($gname) {
 				INFO("VM '{0}' is mapped to '{1}'" -f $vsvm.Name, $gname) 
 				$vmlist += (CreateRow $vsvm $gname)
 			} else {
-				INFO("VM '{0}' is not backup target" -f $vsvm.Name)
+				Throw "Wrong start-time '{0}' for vDC '{1}'" -f $order.'start-time',$order.orgvdc	
 			}
 			break
 		}
