@@ -14,7 +14,7 @@
 $INSTALL_DIR = Split-path (Split-path $script:MyInvocation.MyCommand.Path)
 
 # Log File Location
-$LOG_DIR = "$INSTALL_DIR\log"
+$LOG = "$INSTALL_DIR\log\GCF-SyncBackupJob.log"
 
 # Backup configuration
 $BACKUP_CFG = "$INSTALL_DIR\config\backup-config.xml"
@@ -31,8 +31,12 @@ $TMP_MCCLI = "$INSTALL_DIR\output\mccli.xml"
 
 # Logging facility
 function INFO ($s) {
-	Write-Host ("$(Get-Date) INFO: {0}" -f $s) -ForegroundColor Gray
+	$l = "$(Get-Date) INFO: {0}" -f $s
+	Write-Host $l -ForegroundColor Gray
+	$l | Out-File $LOG -Append -Encoding ASCII
 }
 function ERROR ($s) {
-	Write-Host ("$(Get-Date) ERROR: {0}" -f $s) -ForegroundColor Red
+	$l = "$(Get-Date) ERROR: {0}" -f $s
+	Write-Host $l -ForegroundColor Red
+	$l | Out-File $LOG -Append -Encoding ASCII
 }
