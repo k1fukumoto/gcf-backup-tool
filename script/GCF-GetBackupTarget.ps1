@@ -22,10 +22,10 @@ function CreateRow ($vm,$gname) {
 	return $row
 }
 
-function FindGeneration($ds) {
+function FindGeneration($dspath) {
 	$maps = $cfg.'backup-config'.'datastore-maps'.'datastore-map'
 	foreach($m in $maps){
-		if ($ds.Name -like $m.pattern) {
+		if ($dspath -like $m.pattern) {
 			return $m.generation
 		}
 	}
@@ -69,26 +69,33 @@ $cfg.'backup-config'.orders.order | %{
 	$vdc = Get-OrgVdc $_.orgvdc
 	if($vdc -eq $null) {throw "VDC {0} not found" -f $_.orgvdc}
 	$vdc | Get-CIVM | % {
-		$vsvm = Get-VM -Name ("*{0}*" -f $_.Id.split(':')[3])
-		$datastores = $vsvm | Get-Datastore 
-		# At least 2 datastores are returned for each VM. One for VMX file, and the other for disks.
-		# VCD doesn't allow to create VM which spans multiple storage profiles/datastores.
-		# Just pick the first datastore.
-		foreach($ds in $datastores) {
-			$gen = FindGeneration $ds
-			if ($gen -eq $null) {
-				INFO("VM '{0}' is not backup target" -f $vsvm.Name)
-				break
-			} 
-			
-			$gname = FindGroup $gen $order
-			if($gname) {
-				INFO("VM '{0}' is mapped to '{1}'" -f $vsvm.Name, $gname) 
-				$vmlist += (CreateRow $vsvm $gname)
-			} else {
-				Throw "Wrong start-time '{0}' for vDC '{1}'" -f $order.'start-time',$order.orgvdc	
-			}
-			break
+		$vsvm = Get-VM -Name ("*{0}*" -f $_.Id.split(':')[3])		
+		
+        # All harddisks are stored in the same datastore. Pick the first HDD.
+		# Oddly, Get-HardDisk returns single object, if VM has only one harddisk.
+        $hdd = Get-HardDisk -VM $vsvm
+        if($hdd -is [array]) {$hdd = $hdd[0]} 
+				
+        # Convert VMFS file path to datastore name^
+        $dspath = $null
+        if($hdd.FileName -match '^\[(\S+)\] ') {
+            $dspath = $matches[1]
+        } else {
+            Throw "Mulformatted VMFS path '{0}'" -f $hdd.FileName
+        }
+               
+        # Map datastore path to backup generation
+        $gen = FindGeneration $dspath
+        if ($gen -eq $null) {
+            INFO("Skip VM '{0}'. Not backup target" -f $vsvm.Name)
+        } else {
+			# Finally, map (generation, start-time) pair to group name
+            $gname = FindGroup $gen $order
+            if($gname) {
+				INFO("Map VMPATH:/{0}/{1}/{2}/{3} to {4}" -f $vdc.Org.Name, $vdc.Name, $_.VApp.Name, $vsvm.Name, $gname)
+            } else {
+                Throw "Wrong start-time '{0}' for vDC '{1}'" -f $order.'start-time'
+            }
 		}
 	}
 }
