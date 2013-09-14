@@ -23,7 +23,9 @@
 
     <!-- Organization vDC name to backup start time mapping -->
 	<orders>
-		<order orgvdc="VCETEST-BT-VDC-01" start-time="3"/>
+		<order orgvdc="Committed DR VCV8888888" start-time="21"/>
+		<order orgvdc="DR VCV8888888 - A" start-time="22"/>
+		<order orgvdc="DR VCV8888888 - B" start-time="23"/>
 	</orders>
 
     <!-- Datastore name pattern to backup generation mapping -->
