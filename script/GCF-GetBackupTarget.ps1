@@ -78,7 +78,7 @@ $cfg.'backup-config'.orders.order | %{
 				
         # Convert VMFS file path to datastore name^
         $dspath = $null
-        if($hdd.FileName -match '^\[(\S+)\] ') {
+		if($hdd.FileName -match '^\[(\S+)\] ') {
             $dspath = $matches[1]
         } else {
             Throw "Mulformatted VMFS path '{0}'" -f $hdd.FileName
@@ -93,8 +93,9 @@ $cfg.'backup-config'.orders.order | %{
             $gname = FindGroup $gen $order
             if($gname) {
 				INFO("Map VMPATH:/{0}/{1}/{2}/{3} to {4}" -f $vdc.Org.Name, $vdc.Name, $_.VApp.Name, $vsvm.Name, $gname)
+				$vmlist += (CreateRow $vsvm $gname)
             } else {
-                Throw "Wrong start-time '{0}' for vDC '{1}'" -f $order.'start-time'
+                Throw "Wrong start-time '{0}' for vDC '{1}'" -f $order.'start-time',$vdc.Name
             }
 		}
 	}
