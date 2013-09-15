@@ -11,7 +11,9 @@
 # QUALITY, NON-INFRINGEMENT AND FITNESS FOR A PARTICULAR PURPOSE. 
 #
 #######################################################################################
+[CmdletBinding()]
 Param(
+	[switch]$rotateLog,
 	[switch]$queryTarget,
 	[switch]$queryBackupJob,
 	[switch]$updateBackupJob,
@@ -19,14 +21,29 @@ Param(
 )
 . .\config\environment.ps1
 
+function RotateLog($log) {
+    $fd = Get-Item $log
+    $filesize = $fd.length/1KB
+	
+    if ($filesize -gt $LOGMAX) {
+		$newname = ("{0}_{1}.log" -f 
+					($fd.fullname -replace '\.log$',''), 
+					(Get-Date -uformat "%Y%m%d-%H%M"))
+        Rename-Item -Path $fd.fullname -NewName $newname
+		INFO("----- Log file is rotated. Old logs are archived in $($newname) -----")
+    }
+}
+
 if($all) {
-	$queryTarget = $queryBackupJob = $updateBackupJob = $true
+	$rotateLog = $queryTarget = $queryBackupJob = $updateBackupJob = $true
 }
 
 try {
+	if($rotateLog) {
+		RotateLog($LOG)
+	}
 	if($queryTarget) {
-		.\script\GCF-GetBackupTarget.ps1
-		
+		.\script\GCF-GetBackupTarget.ps1		
 	}
 	if($queryBackupJob) {
 		.\script\GCF-GetBackupJob.ps1
