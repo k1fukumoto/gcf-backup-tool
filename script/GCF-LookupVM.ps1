@@ -27,9 +27,9 @@ if($logFile -eq $null -or $logFile -eq '') {
 
 $vm_h = @{}
 Get-Content $logFile | Select-String -Pattern "^(.{16}).*VMPATH:(/.+/.+/.+)/(.*$($vmname).+\(.+\))" | %{
-	$date = $_.Matches.Groups[1].Value
-	$path = $_.Matches.Groups[2].Value
-	$vm = $_.Matches.Groups[3].Value
+	$date = $_.Matches[0].Groups[1].Value
+	$path = $_.Matches[0].Groups[2].Value
+	$vm = $_.Matches[0].Groups[3].Value
 	
 	$path_h = $vm_h.Get_Item($vm)
 	if($path_h) {
