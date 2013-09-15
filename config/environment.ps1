@@ -15,6 +15,8 @@ $INSTALL_DIR = Split-path (Split-path $script:MyInvocation.MyCommand.Path)
 
 # Log File Location
 $LOG = "$INSTALL_DIR\log\GCF-SyncBackupJob.log"
+# Log size limit in KB. Log will be renamed once size reaches this number
+$LOGMAX = 1024 # KB
 
 # Backup configuration
 $BACKUP_CFG = "$INSTALL_DIR\config\backup-config.xml"
