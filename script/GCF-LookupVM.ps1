@@ -11,22 +11,22 @@
 # QUALITY, NON-INFRINGEMENT AND FITNESS FOR A PARTICULAR PURPOSE. 
 #
 #######################################################################################
+[CmdletBinding()]
+Param(
+	[Parameter(Mandatory=$true)]
+	[String]$vmname,
+	[Parameter(Mandatory=$false)]
+	[String]$logFile
+)
+
 . .\config\environment.ps1
 
-
-function PrintUsage() {
-	$script_base = Split-path $script:MyInvocation.MyCommand.Path -Leaf
-	Write-Host ("Usage: {0} <VM name pattern>" -f $script_base)
-}
-
-$vmname = $args[0]
-if($vmname -eq $null) {
-	PrintUsage
-	exit
+if($logFile -eq $null -or $logFile -eq '') {
+	$logFile = $LOG
 }
 
 $vm_h = @{}
-Get-Content $LOG | Select-String -Pattern "^(.{16}).*VMPATH:(/.+/.+/.+)/(.*$($vmname).+\(.+\))" | %{
+Get-Content $logFile | Select-String -Pattern "^(.{16}).*VMPATH:(/.+/.+/.+)/(.*$($vmname).+\(.+\))" | %{
 	$date = $_.Matches.Groups[1].Value
 	$path = $_.Matches.Groups[2].Value
 	$vm = $_.Matches.Groups[3].Value
