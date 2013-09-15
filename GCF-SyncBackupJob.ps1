@@ -22,6 +22,8 @@ Param(
 . .\config\environment.ps1
 
 function RotateLog($log) {
+	if(!(Test-Path $log)) {return}
+	
     $fd = Get-Item $log
     $filesize = $fd.length/1KB
 	
