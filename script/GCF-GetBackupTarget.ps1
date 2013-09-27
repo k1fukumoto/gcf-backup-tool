@@ -70,6 +70,12 @@ $cfg.'backup-config'.orders.order | %{
 	if($vdc -eq $null) {throw "VDC {0} not found" -f $_.orgvdc}
 	$vdc | Get-CIVM | % {
 		$vsvm = Get-VM -Name ("*{0}*" -f $_.Id.split(':')[3])		
+	
+		if($vsvm -eq $null) {
+			# This happens if VM is "Failed to create" status on vCD. It only exists in vCD world.
+            INFO("Skip VM '{0}'. 'Failed to Create' status on vCD" -f $_.Name)
+			return
+		}
 		
         # All harddisks are stored in the same datastore. Pick the first HDD.
 		# Oddly, Get-HardDisk returns single object, if VM has only one harddisk.
