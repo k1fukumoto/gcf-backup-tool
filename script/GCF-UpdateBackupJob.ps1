@@ -70,7 +70,7 @@ function AvamarRemoveClient($gname,$vm) {
 function AvamarAddClient($gname,$vm) {
 	$folder = (Get-VM $vm | Get-FolderPath)
 	$folder = ($folder.Path -replace "$($acct.datacenter)/", '')
-	$vm_add = "mccli client add --type=vmachine --name='$($vm)' --datacenter=$($acct.datacenter) --domain=$($acct.domain) --folder='$($folder)' --xml"
+	$vm_add = "mccli client add --type=vmachine --name='$($vm)' --datacenter=$($acct.datacenter) --domain=$($acct.domain) --folder='$($folder)' --changed-block-tracking=true --xml"
 	$group_add = "mccli group add-client --client-domain=$($acct.domain) --client-name='$($vm)' --domain=$($acct.domain) --name=$($gname) --xml"
 
 	$addret = AvamarRunCmd($vm_add)
